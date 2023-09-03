@@ -90,14 +90,17 @@ async def voice_message_handler(message: types.Message):
 
     file = await bot.get_file(file_id)
     file_path = file.file_path
-    file_on_disk = Path("", f"{file_id}.tmp")
+    file_on_disk = Path("/tmp/", f"{file_id}.tmp")
     await bot.download_file(file_path, destination=file_on_disk)
     await message.reply("Аудио получено")
 
     text = stt.audio_to_text(file_on_disk)
     if not text:
         text = "Формат документа не поддерживается"
-    await message.answer(text)
+    MESSAGE_MAX_CHARS = 4096
+    for chunk_start in range(0, len(text), MESSAGE_MAX_CHARS):
+        chunk = text[chunk_start:(chunk_start+MESSAGE_MAX_CHARS)]
+        await message.answer(chunk)
 
     os.remove(file_on_disk)  # Удаление временного файла
 
