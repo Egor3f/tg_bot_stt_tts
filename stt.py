@@ -18,13 +18,11 @@ class STT:
     default_init = {
         "model_path": "models/vosk/model",  # путь к папке с файлами STT модели Vosk
         "sample_rate": 16000,
-        "ffmpeg_path": "models/vosk"  # путь к ffmpeg
     }
 
     def __init__(self,
                  model_path=None,
                  sample_rate=None,
-                 ffmpeg_path=None
                  ) -> None:
         """
         Настройка модели Vosk для распознования аудио и
@@ -32,11 +30,9 @@ class STT:
 
         :arg model_path:  str  путь до модели Vosk
         :arg sample_rate: int  частота выборки, обычно 16000
-        :arg ffmpeg_path: str  путь к ffmpeg
         """
         self.model_path = model_path if model_path else STT.default_init["model_path"]
         self.sample_rate = sample_rate if sample_rate else STT.default_init["sample_rate"]
-        self.ffmpeg_path = ffmpeg_path if ffmpeg_path else STT.default_init["ffmpeg_path"]
 
         self._check_model()
 
@@ -54,18 +50,6 @@ class STT:
                 "Скачайте модель по ссылке https://alphacephei.com/vosk/models"
                             )
 
-        isffmpeg_here = False
-        for file in os.listdir(self.ffmpeg_path):
-            if file.startswith('ffmpeg'):
-                isffmpeg_here = True
-
-        if not isffmpeg_here:
-            raise Exception(
-                "Ffmpeg: сохраните ffmpeg.exe в папку ffmpeg\n"
-                "Скачайте ffmpeg.exe по ссылке https://ffmpeg.org/download.html"
-                            )
-        self.ffmpeg_path = self.ffmpeg_path + '/ffmpeg'
-
     def audio_to_text(self, audio_file_name=None) -> str:
         """
         Offline-распознавание аудио в текст через Vosk
@@ -79,7 +63,7 @@ class STT:
 
         # Конвертация аудио в wav и результат в process.stdout
         process = subprocess.Popen(
-            [self.ffmpeg_path,
+            ['ffmpeg',
              "-loglevel", "quiet",
              "-i", audio_file_name,          # имя входного файла
              "-ar", str(self.sample_rate),   # частота выборки

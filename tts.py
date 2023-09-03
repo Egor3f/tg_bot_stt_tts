@@ -23,7 +23,6 @@ class TTS:
         "speaker_voice": "kseniya",
         "model_path": "models/silero/model.pt",  # путь к файлу TTS модели Silero
         "model_url": "https://models.silero.ai/models/tts/ru/v3_1_ru.pt",  # URL к TTS модели Silero
-        "ffmpeg_path": "models/silero"  # путь к ffmpeg
     }
 
     def __init__(
@@ -34,7 +33,6 @@ class TTS:
         speaker_voice=None,
         model_path=None,
         model_url=None,
-        ffmpeg_path=None
     ) -> None:
         """
         Настройка модели Silero для преобразования текста в аудио.
@@ -45,7 +43,6 @@ class TTS:
         :arg speaker_voice: str     # диктор "aidar", "baya", "kseniya", "xenia", "random"(генерит голос каждый раз, долго)
         :arg model_path: str        # путь до модели silero
         :arg model_url: str         # URL к TTS модели Silero
-        :arg ffmpeg_path: str       # путь к ffmpeg
         """
         self.sample_rate = sample_rate if sample_rate else TTS.default_init["sample_rate"]
         self.device_init = device_init if device_init else TTS.default_init["device_init"]
@@ -53,7 +50,6 @@ class TTS:
         self.speaker_voice = speaker_voice if speaker_voice else TTS.default_init["speaker_voice"]
         self.model_path = model_path if model_path else TTS.default_init["model_path"]
         self.model_url = model_url if model_url else TTS.default_init["model_url"]
-        self.ffmpeg_path = ffmpeg_path if ffmpeg_path else TTS.default_init["ffmpeg_path"]
 
         self._check_model()
 
@@ -68,18 +64,6 @@ class TTS:
         """
         if not os.path.isfile(self.model_path):
             torch.hub.download_url_to_file(self.model_url, self.model_path)
-
-        isffmpeg_here = False
-        for file in os.listdir(self.ffmpeg_path):
-            if file.startswith('ffmpeg'):
-                isffmpeg_here = True
-
-        if not isffmpeg_here:
-            raise Exception(
-                "Ffmpeg: сохраните ffmpeg.exe в папку ffmpeg\n"
-                "Скачайте ffmpeg.exe по ссылке https://ffmpeg.org/download.html"
-                            )
-        self.ffmpeg_path = self.ffmpeg_path + '/ffmpeg'
 
     def wav_to_ogg(
         self,
@@ -103,7 +87,7 @@ class TTS:
             os.remove(out_filename)
 
         command = [
-            self.ffmpeg_path,
+            'ffmpeg',
             "-loglevel", "quiet",
             "-i", in_filename,
             "-acodec", "libvorbis",
@@ -139,7 +123,7 @@ class TTS:
             os.remove(out_filename)
 
         command = [
-            self.ffmpeg_path,
+            'ffmpeg',
             "-i", in_filename,
             "-ar", "16000",
             "-ac", "1",
@@ -252,7 +236,7 @@ class TTS:
         # endregion
 
         command = [
-            self.ffmpeg_path,
+            'ffmpeg',
             "-loglevel", "quiet",
             "-f", "concat",
             "-safe", "0",
@@ -416,7 +400,7 @@ class TTS:
         :return:       bytes  # выходной файл в байтах
         """
         command = [
-            self.ffmpeg_path,
+            'ffmpeg',
             "-i", 'pipe:0',          # stdin
             "-f", "ogg",             # format
             "-acodec", "libvorbis",  # codec

@@ -136,3 +136,4 @@ model/
 ffmpeg.exe
 model.pt
 tmp/
+/.idea/
